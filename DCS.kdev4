@@ -1,0 +1,4 @@
+[Project]
+Name=DCS
+Manager=KDevCMakeManager
+VersionControl=kdevgit
