@@ -3,6 +3,7 @@ cmake_minimum_required (VERSION 2.8)
 project(FDS)
 
 set (CMAKE_BUILD_TYPE DEBUG)
+set (CMAKE_CXX_COMPILER clang++-3.6)
 
 find_package(Boost REQUIRED)
 if (Boost_FOUND)

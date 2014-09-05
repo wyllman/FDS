@@ -25,8 +25,8 @@
 
 using namespace std;
 
-Test::Test(const Deposit& deposit, uint32_t seconds) :
-	m_deposit(&const_cast<Deposit&>(deposit)),
+Test::Test(Deposit& deposit, uint32_t seconds) :
+    m_deposit(&deposit),
 	m_runningTime(seconds)
 	{
 

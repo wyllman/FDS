@@ -31,7 +31,7 @@ private:
 	uint32_t m_runningTime;
 	std::vector<uint32_t> m_levels;
 public:
-	Test(const Deposit&, uint32_t);
+    Test(Deposit&, uint32_t);
 	~Test();
 	void run();
 	void plot();
