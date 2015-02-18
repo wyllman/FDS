@@ -43,12 +43,13 @@ private:
 		int32_t topR;
 	};
 	
-	float m_currentLevel;
-	float m_targetLevel;
-	float m_capacity;
-	Valve* m_intake;
-	Valve* m_outtake;
-	float m_error;
+	static constexpr float m_BASE = 10.0; //!< Deposit size (Assumed square)
+	float m_currentLevel; //!< Deposit water level in meters
+	float m_targetLevel; //!< Deposit target water level in meters
+	float m_capacity; //!< Deposit capacity in m³ (m_BASE^2 * m_currentLevel)
+	Valve* m_intake; //!< Intake valve
+	Valve* m_outtake; //!< Outtake valve
+	float m_error; //!<
 	
 	TrapezoidL m_negative;
 	TrapezoidR m_positive;
@@ -62,15 +63,56 @@ private:
 	float conclusion(const std::vector<float>&);
 	
 public:
+	/**
+	 * @fn CTOR
+	 * @param level Water level in meters
+	 * @param target Target water level in meters
+	 * @param in Intake valve flow in m³/s
+	 * @param out Outtake valve flow in m³/s
+	 */
 	Deposit(float, float, float, float);
+	/**
+	 * @fn DTOR
+	 */
 	~Deposit();
+	/**
+	 * @fn float level()
+	 * @brief Deposit current level in meters.
+	 */
 	float level() { return m_currentLevel; }
-	void setLevel(float);
+	/**
+	 * @fn float target()
+	 * @brief Deposit target level in meters.
+	 */
 	float target() { return m_targetLevel; }
-	void setTarget(float);
+	/**
+	 * @fn float run()
+	 * @brief Runs the FDS
+	 * 
+	 * This methos runs all the steps required for a fuzzy decision system
+	 * and returns the resulting water level.
+	 */
 	float run();
+	/**
+	 * @fn float findPoint(const Triangle&, float)
+	 * @param triangle The defined triangle figure of the inference.
+	 * @param point The point which truth value is to be calculated.
+	 * @return The truth value of the point.
+	 */
 	float findPoint(const Triangle&, float);
+	/**
+	 * @fn float findPoint(const TrapezoidL&, float)
+	 * @param trap The defined left leaned trapezoid figure of the inference.
+	 * @param point The point which truth value is to be calculated.
+	 * @return The truth value of the point.
+	 */
 	float findPoint(const TrapezoidL&, float);
+	/**
+	 * @fn float findPoint(const TrapezoidR&, float)
+	 * @param trap The defined right leaned trapezoid figure of the inference.
+	 * @param point The point which truth value is to be calculated.
+	 * @return The truth value of the point.
+	 */
 	float findPoint(const TrapezoidR&, float);
 };
 

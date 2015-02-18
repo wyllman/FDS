@@ -17,20 +17,29 @@
  *
  */
 
-#ifndef VALVE_H
-#define VALVE_H
+#ifndef TEST_H
+#define TEST_H
 
+#include <vector>
 #include <stdint.h>
 
-class Valve {
+class Deposit;
+
+class Test {
 private:
-	float m_flow;
-	float m_aperture;
+	Deposit *m_deposit;
+	uint32_t m_runningTime;
+	std::vector<float> m_levels;
 public:
-	Valve(float, float);
-	~Valve();
-	float flow();
-	void setAperture(float);
+	/**
+	 * @fn CTOR
+	 * @param deposit Deposit object to be tested
+	 * @param seconds Simulation duration
+	 */
+    Test(Deposit&, uint32_t);
+	~Test();
+	void run();
+	void plot();
 };
 
-#endif // VALVE_H
+#endif // TEST_H

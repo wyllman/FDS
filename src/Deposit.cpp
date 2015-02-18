@@ -32,7 +32,7 @@ Deposit::Deposit(float level, float target, float in, float out) :
 	m_targetLevel(target) {
 	m_intake = new Valve(in, 0);
 	m_outtake = new Valve(out, 100);
-	m_capacity = m_currentLevel * 10 * 10;
+	m_capacity = m_currentLevel * m_BASE * m_BASE;
 	m_error = m_targetLevel - m_currentLevel;
 
 	m_negative.topL = -10;
@@ -56,32 +56,17 @@ Deposit::Deposit(float level, float target, float in, float out) :
 Deposit::~Deposit() {
 	if (m_intake != NULL) {
 		delete m_intake;
-		m_intake = NULL;
 	}
 
 	if (m_outtake != NULL) {
 		delete m_outtake;
-		m_outtake = NULL;
-	}
-}
-
-
-void Deposit::setLevel(float level) {
-	if (level >= 0) {
-		m_currentLevel = level;
-		m_capacity = m_currentLevel * 100;
-	}
-}
-
-void Deposit::setTarget(float level) {
-	if (level >= 0) {
-		m_targetLevel = level;
 	}
 }
 
 float Deposit::run() {
 	static uint32_t iteration = 0;
 	float newLevel;
+	float newAperture;
 	vector<float> error;
 	vector<float> data;
 
@@ -89,14 +74,29 @@ float Deposit::run() {
 
 	if (iteration % 1800 == 0) {
 		m_error = m_targetLevel - m_currentLevel;
+// 		cout << "error level: " << m_error << endl;
 	}
 
 	error = difusion(m_error);
+// 	cout << "difusion" << endl;
+// 	for (auto it : error) {
+// 		cout << it << endl;
+// 	}
 	data = inference(error);
+// 	cout << "inference" << endl;
+// 	for (auto it : data) {
+// 		cout << it << endl;
+// 	}
 
+	newAperture = conclusion(data);
+// 	cout << "Setting aperture to " << newAperture << endl;
 	m_intake->setAperture(conclusion(data));
+// 	cout << "Capacity before flow: " << m_capacity << endl;
 	m_capacity += m_intake->flow() - m_outtake->flow();
+// 	cout << "Capacity after flow: " << m_capacity << endl;
 	newLevel = m_capacity / 100;
+// 	cout << "New level: " << newLevel << endl;
+// 	cin.get();
 
 	if (newLevel < 0) {
 		throw new exception;
@@ -104,6 +104,55 @@ float Deposit::run() {
 
 	m_currentLevel = newLevel;
 	return m_currentLevel;
+}
+
+const vector<float>& Deposit::difusion(float value) {
+	vector<float> values;
+	values.resize(3);
+	values[0] = findPoint(m_negative, value);
+	values[1] = findPoint(m_zero, value);
+	values[2] = findPoint(m_positive, value);
+	for (auto it : values) {
+		cout << it << endl;
+	}
+	cin.get();
+
+	return *new vector<float>(values);
+}
+
+const vector<float>& Deposit::inference(const vector<float>& error) {
+	vector<float> what;
+	float max;
+
+	for (int32_t i = -25; i <= 100; ++i) {
+		max = fmax(findPoint(m_closed, i), findPoint(m_open, i));
+
+		if (i <= 25) {
+			what.push_back(fmin(error[0], fmin(error[1], max)));
+		} else {
+			what.push_back(fmin(error[2], max));
+		}
+	}
+
+	return *new vector<float>(what);
+}
+
+float Deposit::conclusion(const vector<float>& data) {
+	float centroid;
+	float top;
+	float bot;
+
+	top = 0;
+	bot = 0;
+
+	int32_t i = 0;
+	for (auto it : data) {
+		top += it * (i++ - 25);
+		bot += it;
+	}
+
+	centroid = top / bot;
+	return centroid;
 }
 
 float Deposit::findPoint(const Deposit::Triangle& triangle, float point) {
@@ -136,49 +185,4 @@ float Deposit::findPoint(const Deposit::TrapezoidR& trap, float point) {
 	} else {
 		return 0.0;
 	}
-}
-
-const vector<float>& Deposit::difusion(float value) {
-	vector<float> values;
-	values.resize(3);
-	values[0] = findPoint(m_negative, value);
-	values[1] = findPoint(m_zero, value);
-	values[2] = findPoint(m_positive, value);
-
-	return * new vector<float>(values);
-}
-
-const vector<float>& Deposit::inference(const vector<float>& error) {
-	vector<float> what;
-	vector<float> caca;
-	float max;
-
-	for (int32_t i = -25; i <= 100; ++i) {
-		max = fmax(findPoint(m_closed, i), findPoint(m_open, i));
-
-		if (i <= 25) {
-			what.push_back(fmin(error[0], fmin(error[1], max)));
-		} else {
-			what.push_back(fmin(error[2], max));
-		}
-	}
-
-	return *new vector<float>(what);
-}
-
-float Deposit::conclusion(const vector<float>& data) {
-	float centroid;
-	float top;
-	float bot;
-
-	top = 0;
-	bot = 0;
-
-	for (vector<float>::const_iterator i = data.begin(); i != data.end(); ++i) {
-		top += *i * (i - data.begin() - 25);
-		bot += *i;
-	}
-
-	centroid = top / bot;
-	return centroid;
 }

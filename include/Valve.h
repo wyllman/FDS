@@ -17,24 +17,33 @@
  *
  */
 
-#ifndef TEST_H
-#define TEST_H
+#ifndef VALVE_H
+#define VALVE_H
 
-#include <vector>
-#include <stdint.h>
-
-class Deposit;
-
-class Test {
+class Valve {
 private:
-	Deposit *m_deposit;
-	uint32_t m_runningTime;
-	std::vector<uint32_t> m_levels;
+	float m_flow; //!< Valve flow at max aperture
+	float m_aperture; //!< Valve aperture as a percentage
 public:
-    Test(Deposit&, uint32_t);
-	~Test();
-	void run();
-	void plot();
+	/**
+	 * @brief CTOR
+	 * @param flow Sets the valve flow at max aperture (m³/s)
+	 * @param aperture Sets the initial aperture
+	 */
+	Valve(float, float);
+	~Valve();
+	/**
+	 * @fn float flow()
+	 * @brief Current flow through the valve
+	 * @return flow in (m³/s)
+	 */
+	float flow();
+	/**
+	 * @fn setAperture(float)
+	 * @brief Sets the aperture of the valve
+	 * @param ap aperture value [-25,100]
+	 */
+	void setAperture(float);
 };
 
-#endif // TEST_H
+#endif // VALVE_H

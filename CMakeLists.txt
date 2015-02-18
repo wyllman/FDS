@@ -1,18 +1,22 @@
-cmake_minimum_required (VERSION 2.8)
+cmake_minimum_required (VERSION 3.1)
 
 project(FDS)
 
 set (CMAKE_BUILD_TYPE DEBUG)
-set (CMAKE_CXX_COMPILER clang++-3.6)
+set (CMAKE_C_COMPÎLER clang)
+set (CMAKE_CXX_COMPILER clang++)
+list (APPEND CMAKE_CXX_FLAGS -std=c++14)
 
 find_package(Boost REQUIRED)
 if (Boost_FOUND)
         include_directories (${Boost_INCLUDE_DIRS})
-        set (BOOST_SYSTEM_LIB ${Boost_LIBRARY_DIRS}/x86_64-linux-gnu/libboost_system.so)
-        set (BOOST_IOSTREAM_LIB ${Boost_LIBRARY_DIRS}/x86_64-linux-gnu/libboost_iostreams.so)
+        set (BOOST_SYSTEM_LIB ${Boost_LIBRARY_DIRS}/libboost_system.so)
+        set (BOOST_IOSTREAM_LIB ${Boost_LIBRARY_DIRS}/libboost_iostreams.so)
 endif (Boost_FOUND)
 
-add_executable(FDS Test.cpp Deposit.cpp Valve.cpp main.cpp)
+include_directories(include)
+
+add_executable(FDS src/Test.cpp src/Deposit.cpp src/Valve.cpp main.cpp)
 
 target_link_libraries (
 	FDS
