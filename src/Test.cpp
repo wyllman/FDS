@@ -50,6 +50,7 @@ void Test::plot() {
 	
 	gp << "set xlabel 'T(s)'\n";
 	gp << "set ylabel 'A(m)'\n";
+	gp << "set yrange [19:20.1]\n";
 	gp << "plot '-' with lines title 'water level'\n";
 	
 	gp.send1d(m_levels);

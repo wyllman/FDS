@@ -20,29 +20,41 @@
 #ifndef DEPOSIT_H
 #define DEPOSIT_H
 
-#include <stdint.h>
+#include <cstdint>
 #include <vector>
 
 class Valve;
 
 class Deposit {
 private:
+	enum Error {
+	    NEGATIVE,
+	    ZERO,
+	    POSITIVE
+	};
+	
+	struct Rules {
+		std::vector<float> _1;
+		std::vector<float> _2;
+		std::vector<float> _3;
+	};
+	
 	struct Triangle {
 		int32_t botL;
 		int32_t top;
 		int32_t botR;
 	};
-	
+
 	struct TrapezoidL {
 		int32_t topL;
 		int32_t bot;
 	};
-	
+
 	struct TrapezoidR {
 		int32_t bot;
 		int32_t topR;
 	};
-	
+
 	static constexpr float m_BASE = 10.0; //!< Deposit size (Assumed square)
 	float m_currentLevel; //!< Deposit water level in meters
 	float m_targetLevel; //!< Deposit target water level in meters
@@ -50,18 +62,19 @@ private:
 	Valve* m_intake; //!< Intake valve
 	Valve* m_outtake; //!< Outtake valve
 	float m_error; //!<
-	
+
 	TrapezoidL m_negative;
 	TrapezoidR m_positive;
 	Triangle m_zero;
-	
+
 	TrapezoidR m_open;
 	Triangle m_closed;
-	
+
 	const std::vector<float>& difusion(float);
-	const std::vector<float>& inference(const std::vector<float>&);
+	const Rules& inference(const std::vector<float>&);
+	const std::vector<float>& composition(const Rules&);
 	float conclusion(const std::vector<float>&);
-	
+
 public:
 	/**
 	 * @fn CTOR
@@ -88,7 +101,7 @@ public:
 	/**
 	 * @fn float run()
 	 * @brief Runs the FDS
-	 * 
+	 *
 	 * This methos runs all the steps required for a fuzzy decision system
 	 * and returns the resulting water level.
 	 */

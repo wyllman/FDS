@@ -29,7 +29,8 @@ using namespace std;
 
 Deposit::Deposit(float level, float target, float in, float out) :
 	m_currentLevel(level),
-	m_targetLevel(target) {
+	m_targetLevel(target)
+{
 	m_intake = new Valve(in, 0);
 	m_outtake = new Valve(out, 100);
 	m_capacity = m_currentLevel * m_BASE * m_BASE;
@@ -53,7 +54,8 @@ Deposit::Deposit(float level, float target, float in, float out) :
 	m_closed.botR = 25;
 }
 
-Deposit::~Deposit() {
+Deposit::~Deposit()
+{
 	if (m_intake != NULL) {
 		delete m_intake;
 	}
@@ -63,41 +65,30 @@ Deposit::~Deposit() {
 	}
 }
 
-float Deposit::run() {
-	static uint32_t iteration = 0;
+float Deposit::run()
+{
+// 	static uint32_t iteration = 0;
 	float newLevel;
 	float newAperture;
-	vector<float> error;
-	vector<float> data;
+	vector<float> errors;
+	Rules consecuents;
+	vector<float> graph;
 
-	++iteration;
+// 	++iteration;
 
-	if (iteration % 1800 == 0) {
-		m_error = m_targetLevel - m_currentLevel;
-// 		cout << "error level: " << m_error << endl;
-	}
-
-	error = difusion(m_error);
-// 	cout << "difusion" << endl;
-// 	for (auto it : error) {
-// 		cout << it << endl;
-// 	}
-	data = inference(error);
-// 	cout << "inference" << endl;
-// 	for (auto it : data) {
-// 		cout << it << endl;
+// 	if (iteration % 600 == 0) {
+	m_error = m_targetLevel - m_currentLevel;
 // 	}
 
-	newAperture = conclusion(data);
-// 	cout << "Setting aperture to " << newAperture << endl;
-	m_intake->setAperture(conclusion(data));
-// 	cout << "Capacity before flow: " << m_capacity << endl;
+	errors = difusion(m_error);
+	consecuents = inference(errors);
+	graph = composition(consecuents);
+	newAperture = conclusion(graph);
+	
+	m_intake->setAperture(newAperture);
 	m_capacity += m_intake->flow() - m_outtake->flow();
-// 	cout << "Capacity after flow: " << m_capacity << endl;
 	newLevel = m_capacity / 100;
-// 	cout << "New level: " << newLevel << endl;
-// 	cin.get();
-
+	
 	if (newLevel < 0) {
 		throw new exception;
 	}
@@ -106,44 +97,53 @@ float Deposit::run() {
 	return m_currentLevel;
 }
 
-const vector<float>& Deposit::difusion(float value) {
+const vector<float>& Deposit::difusion(float value)
+{
 	vector<float> values;
 	values.resize(3);
-	values[0] = findPoint(m_negative, value);
-	values[1] = findPoint(m_zero, value);
-	values[2] = findPoint(m_positive, value);
-	for (auto it : values) {
-		cout << it << endl;
-	}
-	cin.get();
+	values[NEGATIVE] = findPoint(m_negative, value);
+	values[ZERO] = findPoint(m_zero, value);
+	values[POSITIVE] = findPoint(m_positive, value);
 
-	return *new vector<float>(values);
+	return *new vector<float>(move(values));
 }
 
-const vector<float>& Deposit::inference(const vector<float>& error) {
-	vector<float> what;
-	float max;
-
+const Deposit::Rules& Deposit::inference(const vector<float>& error)
+{
+	Rules rules;
+	/*
+	R1: Si el error es negativo cerrar la válvula de entrada
+	R2: Si el error es cero cerrar la válvula de entrada
+	R3: Si el error es positivo abrir la válvula de entrada
+	*/
 	for (int32_t i = -25; i <= 100; ++i) {
-		max = fmax(findPoint(m_closed, i), findPoint(m_open, i));
-
-		if (i <= 25) {
-			what.push_back(fmin(error[0], fmin(error[1], max)));
-		} else {
-			what.push_back(fmin(error[2], max));
-		}
+		rules._1.push_back(fmin(error[NEGATIVE], findPoint(m_closed, i)));
+		rules._2.push_back(fmin(error[ZERO], findPoint(m_closed, i)));
+		rules._3.push_back(fmin(error[POSITIVE], findPoint(m_open, i)));
 	}
 
-	return *new vector<float>(what);
+	return *new Rules(rules);
 }
 
-float Deposit::conclusion(const vector<float>& data) {
+const vector<float>& Deposit::composition(const Rules& rules)
+{
+	vector<float> graph;
+	
+	for (int32_t i = -25; i <= 100; ++i) {
+		graph.push_back(fmax(rules._1[i], fmax(rules._2[i], rules._3[i])));
+	}
+	
+	return *new vector<float>(move(graph));
+}
+
+float Deposit::conclusion(const vector<float>& data)
+{
 	float centroid;
 	float top;
 	float bot;
 
-	top = 0;
-	bot = 0;
+	top = 0.0;
+	bot = 0.0;
 
 	int32_t i = 0;
 	for (auto it : data) {
@@ -152,10 +152,12 @@ float Deposit::conclusion(const vector<float>& data) {
 	}
 
 	centroid = top / bot;
+	
 	return centroid;
 }
 
-float Deposit::findPoint(const Deposit::Triangle& triangle, float point) {
+float Deposit::findPoint(const Deposit::Triangle& triangle, float point)
+{
 	if (point < triangle.botL || point > triangle.botR) {
 		return 0.0;
 	}
@@ -167,7 +169,8 @@ float Deposit::findPoint(const Deposit::Triangle& triangle, float point) {
 	}
 }
 
-float Deposit::findPoint(const Deposit::TrapezoidL& trap, float point) {
+float Deposit::findPoint(const Deposit::TrapezoidL& trap, float point)
+{
 	if (point <= trap.topL) {
 		return 1.0;
 	} else if (point > trap.topL && point < trap.bot) {
@@ -177,7 +180,8 @@ float Deposit::findPoint(const Deposit::TrapezoidL& trap, float point) {
 	}
 }
 
-float Deposit::findPoint(const Deposit::TrapezoidR& trap, float point) {
+float Deposit::findPoint(const Deposit::TrapezoidR& trap, float point)
+{
 	if (point >= trap.topR) {
 		return 1.0;
 	} else if (point > trap.bot && point < trap.topR) {
