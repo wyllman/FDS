@@ -56,6 +56,7 @@ private:
 	};
 
 	static constexpr float m_BASE = 10.0; //!< Deposit size (Assumed square)
+	float m_startingLevel;
 	float m_currentLevel; //!< Deposit water level in meters
 	float m_targetLevel; //!< Deposit target water level in meters
 	float m_capacity; //!< Deposit capacity in m³ (m_BASE^2 * m_currentLevel)
@@ -89,6 +90,11 @@ public:
 	 */
 	~Deposit();
 	/**
+	 * @fn float startingLevel()
+	 * @brief Deposit starting level
+	 */
+	float startingLevel() { return m_startingLevel; }
+	/**
 	 * @fn float level()
 	 * @brief Deposit current level in meters.
 	 */
@@ -102,7 +108,7 @@ public:
 	 * @fn float run()
 	 * @brief Runs the FDS
 	 *
-	 * This methos runs all the steps required for a fuzzy decision system
+	 * This methos runs all the	static uint32_t iteration = 0; steps required for a fuzzy decision system
 	 * and returns the resulting water level.
 	 */
 	float run();

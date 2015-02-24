@@ -28,6 +28,7 @@
 using namespace std;
 
 Deposit::Deposit(float level, float target, float in, float out) :
+	m_startingLevel(level),
 	m_currentLevel(level),
 	m_targetLevel(target)
 {
@@ -67,18 +68,13 @@ Deposit::~Deposit()
 
 float Deposit::run()
 {
-// 	static uint32_t iteration = 0;
 	float newLevel;
 	float newAperture;
 	vector<float> errors;
 	Rules consecuents;
 	vector<float> graph;
 
-// 	++iteration;
-
-// 	if (iteration % 600 == 0) {
 	m_error = m_targetLevel - m_currentLevel;
-// 	}
 
 	errors = difusion(m_error);
 	consecuents = inference(errors);

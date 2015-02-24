@@ -50,7 +50,11 @@ void Test::plot() {
 	
 	gp << "set xlabel 'T(s)'\n";
 	gp << "set ylabel 'A(m)'\n";
-	gp << "set yrange [19:20.1]\n";
+	if (m_deposit->startingLevel() < m_deposit->target()) {
+		gp << "set yrange [" << m_deposit->startingLevel() << ":" << m_deposit->target() + 0.1 << "]\n";
+	} else {
+		gp << "set yrange [" << m_deposit->target() + 0.1 << ":" << m_deposit->startingLevel() << "]\n";
+	}
 	gp << "plot '-' with lines title 'water level'\n";
 	
 	gp.send1d(m_levels);
